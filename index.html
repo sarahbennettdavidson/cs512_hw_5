@@ -11,6 +11,7 @@
       font-family: monospace;
     }
 
+    /* shader editors are commented out below
     textarea {
       background: #222;
       color: #0f0;
@@ -18,6 +19,7 @@
       width: 400px;
       height: 250px;
     }
+    */
 
     canvas {
       border: 1px solid #444;
@@ -29,11 +31,12 @@
   <h2>Hierarchical Model with Light: Merce Cunningham Loops data</h2>
   <p>Motion capture data of Merce Cunningham performing Loops, his solo dance for the hands, recorded August 23, 2000 and released by the OpenEnded Group (<a href="https://www.openendedgroup.com/artworks/loops_open.html">openendedgroup.com</a>).<br>
 Motion capture data: Courtesy OpenEnded Group and Cunningham Foundation, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/3.0/us/">CC BY-NC-SA 3.0 US</a>.</p>
-  <p>Edit vertex and fragment shaders on the left to get the result instantly.<br>
+  <p><!-- Edit vertex and fragment shaders on the left to get the result instantly.<br> -->
   Use mouse to drag and rotate. <br>
 Use arrow keys and w, s keys to move the camera.<br>
 
   <div style="display: flex; gap: 10px; align-items: flex-start;">
+    <!-- shader editors, replaced by the controls column
     <div style="display: flex; flex-direction: column; gap: 10px;">
       <div>
         <b>Vertex Shader</b><br>
@@ -44,10 +47,10 @@ Use arrow keys and w, s keys to move the camera.<br>
         <textarea id="fragEditor"></textarea>
       </div>
     </div>
-    <div>
-      <canvas id="glcanvas" width="400" height="400"></canvas>
+    -->
 
-      <div style="max-height: 150px; overflow-y: auto; width: 400px;">
+      <!-- controls column (was under the canvas: max-height: 150px; overflow-y: auto) -->
+      <div style="width: 400px;">
         <div style="display: flex; gap: 20px;">
           <div>
             <label>Rotate X <input type="range" id="xRotSlider" min="-5" max="5" step="0.1" value="0"></label><br>
@@ -80,6 +83,8 @@ Use arrow keys and w, s keys to move the camera.<br>
         </div>
         <div id="paletteSliders" style="display: flex; gap: 10px;"></div>
       </div>
+    <div>
+      <canvas id="glcanvas" width="400" height="400"></canvas>
     </div>
   </div>
 
@@ -256,10 +261,11 @@ function wristPos(data) {
     const gl = canvas.getContext("webgl2");
     if (!gl) alert("WebGL2 not supported");
 
-    let vertEditor = document.getElementById("vertEditor");
-    let fragEditor = document.getElementById("fragEditor");
-    vertEditor.value = document.getElementById("vertex-shader").textContent;
-    fragEditor.value = document.getElementById("fragment-shader").textContent;
+    // shader editors commented out
+    // let vertEditor = document.getElementById("vertEditor");
+    // let fragEditor = document.getElementById("fragEditor");
+    // vertEditor.value = document.getElementById("vertex-shader").textContent;
+    // fragEditor.value = document.getElementById("fragment-shader").textContent;
 
     let program, posLoc, normLoc, timeLoc, uMVM, uPM, uMTM, uDT;
     let handDataR = null, handDataL = null;   // the hand skeleton data from the parsed htr file
@@ -331,7 +337,10 @@ function wristPos(data) {
 
     function initShaderProgram() {
       try {
-        program = createProgram(gl, vertEditor.value, fragEditor.value);
+        // program = createProgram(gl, vertEditor.value, fragEditor.value);
+        program = createProgram(gl,
+          document.getElementById("vertex-shader").textContent,
+          document.getElementById("fragment-shader").textContent);
         gl.useProgram(program);
         posLoc = gl.getAttribLocation(program, "aPosition");
         normLoc = gl.getAttribLocation(program, "aNormal");
@@ -344,8 +353,8 @@ function wristPos(data) {
       } catch (e) { console.error(e); }
     }
     initShaderProgram();
-    vertEditor.onkeyup = initShaderProgram;
-    fragEditor.onkeyup = initShaderProgram;
+    // vertEditor.onkeyup = initShaderProgram;
+    // fragEditor.onkeyup = initShaderProgram;
 
     // Mouse and keyboard interactions
     let mouseDown = false, lastX, lastY, cubeRotX = 0, cubeRotY = 0, cubeRotZ = 0;
