@@ -209,6 +209,7 @@ function drawHand(data, globalMatrix) {
 
   const worldMatrices = computeSkeletonMatrices(data.rootNode, activeFrame, data.basePositions);
   for (let i = 0; i < worldMatrices.length; i++) {
+    gl.uniform1f(uDT, worldMatrices[i].depth / (data.maxDepth + 1));  //the per bone color based on htr skeleton tree depth
     drawShape(boneBuffers, multiplyMat4(globalMatrix, worldMatrices[i].matrix));
   }
 }
@@ -307,6 +308,7 @@ function wristPos(data) {
         uMVM = gl.getUniformLocation(program, "uModelViewMatrix");
         uPM = gl.getUniformLocation(program, "uProjectionMatrix");
         uMTM = gl.getUniformLocation(program, "uModelTransformationMatrix");
+        uDT = gl.getUniformLocation(program, "uDepthT");
 
       } catch (e) { console.error(e); }
     }
