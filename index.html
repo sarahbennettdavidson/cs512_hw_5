@@ -77,44 +77,40 @@ Use arrow keys and w, s keys to move the camera.<br>
   <!-- Vertex shader -->
   <script id="vertex-shader" type="x-shader/x-vertex">#version 300 es
 in vec3 aPosition;
-in vec3 aColor;
-in vec2 aUV;     
-
+in vec3 aNormal;
 
 uniform float uTime; //time in sec
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
 uniform mat4 uModelTransformationMatrix;
 
-out vec3 vColor;
-out vec3 vPos;
-out vec2 vUV;
+//uniform mat4 uModelView; //have to change these everywhere
+//uniform mat4 uProjection;  //have to change these everywhere
+
+out vec3 vPosition;
+out vec3 vNormal;
 
 
-void main() {
-  gl_Position = uProjectionMatrix * uModelViewMatrix * uModelTransformationMatrix * vec4(aPosition,1.0);
-  vColor = aColor;
-  vPos = aPosition;//pass the pos to the frag shader to do color placements
-  vUV=aUV;
+void main() {    
+  mat4 mv = uModelViewMatrix * uModelTransformationMatrix;
+  vec4 p = mv * vec4(aPosition, 1.0);
+  vPosition = p.xyz;
+  vNormal = transpose(inverse(mat3(mv))) * aNormal;
+  gl_Position = uProjectionMatrix * p;
 }
 </script>
   <!-- Fragment Shader -->
   <script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
 precision mediump float;
 in vec3 vColor;
-in vec3 vPos;//to get color placements from vertex shader
-in vec2 vUV;  //for later
+in vec3 vPosition;
 in vec3 vNormal;
 
 uniform vec3 uLightPos;   // eye space
 //uniform vec3 uColor;
 
-uniform int patternNum;
 uniform vec3 paletteParams[4];
 uniform float paletteT;
-uniform float patternSize;
-uniform float blur;
-uniform float patternRot;
 
 out vec4 fragColor;
 
@@ -126,14 +122,7 @@ vec3 palette( in float t, in vec3 a, in vec3 b, in vec3 c, in vec3 d )
 }
 
 void main() {
-  vec2 uv = vUV;  //for later
-
- 
-
-
-
   vec3 col = palette(paletteT, paletteParams[0],paletteParams[1],paletteParams[2],paletteParams[3]);// swap in stripes or dots and use palette
-  //fragColor = vec4(vUV, 0.0, 1.0);//uv test for later
 
   vec3 Ka = 0.2 * col;
   vec3 Kd = 0.8 * col;
@@ -141,8 +130,8 @@ void main() {
   float shininess = 32.0;
 
   vec3 N = normalize(vNormal);
-  vec3 L = normalize(uLightPos - vPos);
-  vec3 V = normalize(-vPos);           // camera sits at the origin
+  vec3 L = normalize(uLightPos - vPosition);
+  vec3 V = normalize(-vPosition);           // camera sits at the origin
   vec3 R = reflect(-L, N);
 
   float diff = max(dot(N, L), 0.0);
