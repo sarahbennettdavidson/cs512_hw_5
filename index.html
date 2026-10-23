@@ -119,7 +119,6 @@ uniform bool uFlat;  // true = flat shading, false = phong
 //uniform vec3 uColor;
 
 uniform vec3 paletteParams[4];
-uniform float paletteT;
 uniform float uDepthT;  //for different coloring according to tree depth
 
 out vec4 fragColor;
@@ -141,7 +140,7 @@ vec3 pointLight( in vec3 lightPos, in vec3 lightColor)
     vec3 R = reflect(-L, N);
     float diff = max(dot(N, L), 0.0);
     float spec = pow(max(dot(V, R), 0.0), shininess);
-    return lightColor * Kd * diff + Ks * spec;
+    return lightColor * (Kd * diff + Ks * spec);
 }
 
 vec3 directionalLight(in vec3 lightDir, in vec3 lightColor)//light direction is a vector, ie going at an angle anything in the path is illuminated.
@@ -150,18 +149,16 @@ vec3 directionalLight(in vec3 lightDir, in vec3 lightColor)//light direction is 
     vec3 R = reflect(-L, N);
     float diff = max(dot(N, L), 0.0);
     float spec = pow(max(dot(V, R), 0.0), shininess);
-    return lightColor * Kd * diff + Ks * spec;
+    return lightColor * (Kd * diff + Ks * spec);
 }
 
     
-void main() {
-  vec3 uLightPos = vec3(0.0, 0.0, -6.0);  
-    
+void main() {    
   vec3 col = palette(uDepthT, paletteParams[0],paletteParams[1],paletteParams[2],paletteParams[3]);
 
   Ka = uKa * col;
   Kd = uKd * col;
-  Ks = vec3(uKs)
+  Ks = vec3(uKs);
 
   N = normalize(uFlat ? vFlatNormal : vNormal);
   V = normalize(-vPosition);           // camera sits at the origin
@@ -516,9 +513,7 @@ speedSlider.addEventListener("input", () => {
       //delta time in ms
       let deltaTime = Date.now() - startTime;
       // object rotation
-      modelTransformationMatrix = multiplyMat4(modelTransformationMatrix, cubeRotation);
-      let amt = Math.abs(Math.sin(deltaTime / 1000));
-      
+      modelTransformationMatrix = multiplyMat4(modelTransformationMatrix, cubeRotation);      
       // camera translation
       modelViewMatrix = mat4Translate(modelViewMatrix, [camX, camY, camZ]);
       
