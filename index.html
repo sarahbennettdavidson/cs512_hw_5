@@ -381,6 +381,9 @@ function wristPos(data) {
         let paletteT = parseFloat(paletteTSlider.value);
         paletteTSlider.addEventListener("input", () => { paletteT = parseFloat(paletteTSlider.value); });
 
+        const shininessSlider = document.getElementById("shininessSlider");
+        let shininess = parseFloat(shininessSlider.value);
+        shininessSlider.addEventListener("input", () => { shininess = parseFloat(shininessSlider.value); });
 
         // Projection setup
         let fov = Math.PI / 4, aspect = canvas.width / canvas.height, zNear = 0.1, zFar = 100;
@@ -467,6 +470,7 @@ speedSlider.addEventListener("input", () => {
       //making some variables for the shader color parameters
       gl.uniform3fv(gl.getUniformLocation(program, "paletteParams"), paletteValues);
       gl.uniform1f(gl.getUniformLocation(program, "paletteT"), paletteT);
+      gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
 
       let handGlobalScale = 0.01;   // lower this if both hands don't fit in view
       let handBaseMatrix = mat4Scale(modelTransformationMatrix, [handGlobalScale, handGlobalScale, handGlobalScale]);
