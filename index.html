@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>One Light and Shading1</title>
+  <title>Light and Shading</title>
   <style>
     body {
       background: #000;
@@ -57,15 +57,11 @@ Use arrow keys and w, s keys to move the camera.<br>
           </div>
           <div style="display: flex; flex-direction: column; gap: 5px;">
             <button id="playBtn">Stop</button>
-            <button id="patternBtn">Checks</button>
             <button id="projBtn">Orthographic</button>
           </div>
         </div>
 
-        <label>patternSize <input type="range" id="patternSizeSlider" min="1" max="10" step="0.1" value="4"></label><br>
-        <label>blur <input type="range" id="blurSlider" min="0.001" max="0.333" step="0.001" value="0"></label><br>
-        <label>Angle <input type="range" id="angleSlider" min="0.00" max="6.283185" step="0.001" value="0"></label>
-        <div>
+          <div>
           https://iquilezles.org/articles/palettes/<br>
           <label>t <input type="range" id="paletteTSlider" min="0" max="1" step="0.01" value="0.5"></label>
         </div>
@@ -102,7 +98,6 @@ void main() {
   <!-- Fragment Shader -->
   <script id="fragment-shader" type="x-shader/x-fragment">#version 300 es
 precision mediump float;
-in vec3 vColor;
 in vec3 vPosition;
 in vec3 vNormal;
 
@@ -226,22 +221,11 @@ function wristPos(data) {
     vertEditor.value = document.getElementById("vertex-shader").textContent;
     fragEditor.value = document.getElementById("fragment-shader").textContent;
 
-    let program, posLoc, colorLoc, timeLoc, uMVM, uPM, uMTM, uvLoc, patternNum;
-    let vbo, nbo, ibo, uvbo;
-    let indexCount =  0;
-    let shapeCounter = 0;
-    const shapeNames = ["Cube", "Pyramid", "Sphere"];
-    let shape = shapeNames[0];
-    let shapeIndexCount = 0;
+    let program, posLoc, normLoc, timeLoc, uMVM, uPM, uMTM;
     let handDataR = null, handDataL = null;   // the hand skeleton data from the parsed htr file
     let currentFrame = 1;     
     let isPlaying = true;
     let framePos = 1;    
-    let patternCounter = 0;
-    const patternNames = ["Checks", "Stripes", "Dots"];
-    let patternID = patternCounter%patternNames.length;
-    let shapeID = shapeCounter%shapeNames.length;
-    let pattern = patternNames[0];
     let a1 = Math.random();
     let a2 = Math.random();
     let a3 = Math.random();
@@ -249,37 +233,9 @@ function wristPos(data) {
 
 
     // Buffers
-    function initBuffers() {
-      let pos, col, idx, uv;
-      if (shape === "Cube") {
-        pos = cubePos; col = cubeColors; idx = cubeIndices; uv = cubeUVs;
-      } else if (shape === "Pyramid") {
-        pos = pyramidPos; col = pyramidColors; idx = pyramidIndices; uv = pyramidUVs;
-      } else {
-        pos = spherePos; col = sphereColors; idx = sphereIndices; uv = sphereUVs;
-      }
-      indexCount = idx.length;
-
-      vbo = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, vbo);
-      gl.bufferData(gl.ARRAY_BUFFER, pos, gl.STATIC_DRAW);
-
-      nbo = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, nbo);
-      gl.bufferData(gl.ARRAY_BUFFER, col, gl.STATIC_DRAW);
-
-      uvbo = gl.createBuffer();//
-      gl.bindBuffer(gl.ARRAY_BUFFER, uvbo);
-      gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW);
-
-      ibo = gl.createBuffer();
-      gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ibo);
-      gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
-    }
-
-    initBuffers();
+   
      // buffers for every shape, made once
-    function makeShapeBuffers(pos, col, uv, idx) {
+    function makeShapeBuffers(pos, col, idx) {
       const b = {};
 
       b.vbo = gl.createBuffer();
@@ -290,10 +246,6 @@ function wristPos(data) {
       gl.bindBuffer(gl.ARRAY_BUFFER, b.nbo);
       gl.bufferData(gl.ARRAY_BUFFER, col, gl.STATIC_DRAW);
 
-      b.uvbo = gl.createBuffer();
-      gl.bindBuffer(gl.ARRAY_BUFFER, b.uvbo);
-      gl.bufferData(gl.ARRAY_BUFFER, uv, gl.STATIC_DRAW);
-
       b.ibo = gl.createBuffer();
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, b.ibo);
       gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
@@ -302,10 +254,7 @@ function wristPos(data) {
       return b;
     }
 
-    const cubeBuffers    = makeShapeBuffers(cubePos, cubeColors, cubeUVs, cubeIndices);
-    const pyramidBuffers = makeShapeBuffers(pyramidPos, pyramidColors, pyramidUVs, pyramidIndices);
-    const sphereBuffers  = makeShapeBuffers(spherePos, sphereColors, sphereUVs, sphereIndices);
-    const boneBuffers = makeShapeBuffers(unitCubePos, cubeColors, cubeUVs, cubeIndices);
+    const boneBuffers = makeShapeBuffers(unitCubePos, unitCubeNormals, cubeIndices);
 
     // draw one shape with one model matrix
     function drawShape(b, matrix) {
@@ -316,12 +265,8 @@ function wristPos(data) {
       gl.vertexAttribPointer(posLoc, 3, gl.FLOAT, false, 0, 0);
 
       gl.bindBuffer(gl.ARRAY_BUFFER, b.nbo);
-      gl.enableVertexAttribArray(colorLoc);
-      gl.vertexAttribPointer(colorLoc, 3, gl.FLOAT, false, 0, 0);
-
-      gl.bindBuffer(gl.ARRAY_BUFFER, b.uvbo);
-      gl.enableVertexAttribArray(uvLoc);
-      gl.vertexAttribPointer(uvLoc, 2, gl.FLOAT, false, 0, 0);
+      gl.enableVertexAttribArray(normLoc);
+      gl.vertexAttribPointer(normLoc, 3, gl.FLOAT, false, 0, 0);
 
       gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, b.ibo);
       gl.drawElements(gl.TRIANGLES, b.count, gl.UNSIGNED_SHORT, 0);
@@ -332,13 +277,11 @@ function wristPos(data) {
         program = createProgram(gl, vertEditor.value, fragEditor.value);
         gl.useProgram(program);
         posLoc = gl.getAttribLocation(program, "aPosition");
-        colorLoc = gl.getAttribLocation(program, "aColor");
-        uvLoc = gl.getAttribLocation(program, "aUV");
+        normLoc = gl.getAttribLocation(program, "aNormal");
         timeLoc = gl.getUniformLocation(program, "uTime");
         uMVM = gl.getUniformLocation(program, "uModelViewMatrix");
         uPM = gl.getUniformLocation(program, "uProjectionMatrix");
         uMTM = gl.getUniformLocation(program, "uModelTransformationMatrix");
-        patternNum = gl.getUniformLocation(program, "patternNum");
 
       } catch (e) { console.error(e); }
     }
@@ -377,10 +320,6 @@ function wristPos(data) {
     const xRotSlider = document.getElementById("xRotSlider");
     const zRotSlider = document.getElementById("zRotSlider");
 
-    const cubeDir    = [ 1.0, 0.0,  0.0  ];
-    const pyramidDir = [-0.5, 0.0,  0.866];
-    const sphereDir  = [-0.5, 0.0, -0.866];
-
 //put palette values here
 
     const paletteValues = new Float32Array([0.5, 0.5, 0.5,   0.5, 0.5, 0.5,   1, 1, 1,   0, 0.33, 0.67]);
@@ -414,18 +353,6 @@ function wristPos(data) {
         let paletteT = parseFloat(paletteTSlider.value);
         paletteTSlider.addEventListener("input", () => { paletteT = parseFloat(paletteTSlider.value); });
 
-        const patternSizeSlider = document.getElementById("patternSizeSlider");
-        let patternSize = parseFloat(patternSizeSlider.value);
-        patternSizeSlider.addEventListener("input", () => { patternSize = parseFloat(patternSizeSlider.value); });
-
-        const blurSlider = document.getElementById("blurSlider");
-        let blur = parseFloat(blurSlider.value);
-        blurSlider.addEventListener("input", () => { blur = parseFloat(blurSlider.value); });
-
-        const angleSlider = document.getElementById("angleSlider");
-        let patternRot = parseFloat(angleSlider.value);
-        angleSlider.addEventListener("input", () => { patternRot = parseFloat(angleSlider.value); });
-
 
         // Projection setup
         let fov = Math.PI / 4, aspect = canvas.width / canvas.height, zNear = 0.1, zFar = 100;
@@ -458,14 +385,6 @@ const playBtn = document.getElementById("playBtn");
     isPlaying = !isPlaying;
     playBtn.textContent = isPlaying ? "Stop" : "Play";
   });
-
-const patternBtn = document.getElementById("patternBtn");
-    patternBtn.addEventListener("click", () => {
-      patternCounter++;
-      patternID = patternCounter % patternNames.length
-      pattern = patternNames[patternID];
-      patternBtn.textContent = pattern;
-});
 
 const speedSlider = document.getElementById("speedSlider");
 const speedLabel = document.getElementById("speedLabel");
@@ -518,12 +437,8 @@ speedSlider.addEventListener("input", () => {
       gl.uniformMatrix4fv(uMVM, false, modelViewMatrix);
 
       //making some variables for the shader color parameters
-      gl.uniform1i(patternNum, patternID);
       gl.uniform3fv(gl.getUniformLocation(program, "paletteParams"), paletteValues);
       gl.uniform1f(gl.getUniformLocation(program, "paletteT"), paletteT);
-      gl.uniform1f(gl.getUniformLocation(program, "patternSize"), patternSize);
-      gl.uniform1f(gl.getUniformLocation(program, "blur"), blur);
-      gl.uniform1f(gl.getUniformLocation(program, "patternRot"), patternRot);
 
       let handGlobalScale = 0.01;   // lower this if both hands don't fit in view
       let handBaseMatrix = mat4Scale(modelTransformationMatrix, [handGlobalScale, handGlobalScale, handGlobalScale]);
