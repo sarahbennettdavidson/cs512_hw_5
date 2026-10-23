@@ -7,7 +7,7 @@
   <style>
     body {
       background: #000;
-      color: #ccc;
+      color: #fff;
       font-family: monospace;
     }
 
@@ -25,9 +25,6 @@
       border: 1px solid #444;
     }
   </style>
-    background: #000;
-      color: #0f0;
-      font-family: monospace;
 </head>
 
 <body>
@@ -53,7 +50,7 @@ Use arrow keys and w, s keys to move the camera.<br>
     -->
 
       <!-- controls column (was under the canvas: max-height: 150px; overflow-y: auto) -->
-      <div style="width: 400px;">
+      <div style="width: 400px; color: #0f0;">
         <div style="display: flex; gap: 20px;">
           <div>
             <label>Rotate X <input type="range" id="xRotSlider" min="-5" max="5" step="0.1" value="0"></label><br>
@@ -63,7 +60,7 @@ Use arrow keys and w, s keys to move the camera.<br>
           </div>
           <div style="display: flex; flex-direction: column; gap: 5px;">
             <button id="playBtn">Stop</button>
-            <button id="projBtn">Orthographic</button>
+            <button id="RandLightBtn">Random Light dir</button>
             <button id="shadingBtnL">Left: Phong</button>
             <button id="shadingBtnR">Right: Flat</button>
           </div>
@@ -146,6 +143,8 @@ vec3 N, V, Kd, Ks, Ka; //global
 uniform float shininess;
 uniform float uKa, uKd, uKs; 
 uniform vec3 uLightColors[3];   // 0 ambient, 1 point, 2 directional
+uniform vec3 uPointLightPos;    // point light position, eye space
+uniform vec3 uDirLightDir;      // direction the directional light travels, eye space
     
 vec3 pointLight( in vec3 lightPos, in vec3 lightColor)
 {
@@ -179,8 +178,8 @@ void main() {
   V = normalize(-vPosition);           // camera sits at the origin
 
   vec3 color = Ka * uLightColors[0];
-  color += pointLight(vec3(10.0, 0.0, -6.0), uLightColors[1]);
-  color += directionalLight(vec3(-1.0, -1.0, -1.0), uLightColors[2]);
+  color += pointLight(uPointLightPos, uLightColors[1]);
+  color += directionalLight(uDirLightDir, uLightColors[2]);
   fragColor = vec4(color, 1.0);
 }
 </script>
@@ -475,34 +474,41 @@ function wristPos(data) {
         // Projection setup
         let fov = Math.PI / 4, aspect = canvas.width / canvas.height, zNear = 0.1, zFar = 100;
 
-        let orthoSize = 2.5;
 
         // Perspective and Orthographic projection
         let projPerspective = perspective(fov, aspect, zNear, zFar);
 
-        let projOrtho = matMul(
-        box2Cube(-orthoSize * aspect, orthoSize * aspect, -orthoSize, orthoSize, zNear, zFar),
-        flipZ()
-    );
-    let proj = projOrtho;
+       
+    let proj = projPerspective;
     
     //behavior to toggle projection types
-    const projBtn = document.getElementById("projBtn");
-    projBtn.addEventListener("click", () => {
-      if (proj === projOrtho) {
-        proj = projPerspective;
-        projBtn.textContent = "Perspective";
-      } else {
-        proj = projOrtho;
-         projBtn.textContent = "Orthographic";
-      }
-});
+   
 
 const playBtn = document.getElementById("playBtn");
   playBtn.addEventListener("click", () => {
     isPlaying = !isPlaying;
     playBtn.textContent = isPlaying ? "Stop" : "Play";
   });
+
+// light placement: starts at the defaults, the button replaces them with random values
+let pointLightPos = [10.0, 0.0, -6.0];
+let dirLightDir   = [-1.0, -1.0, -1.0];
+
+// random number in [min, max)
+function rand(min, max) {
+  return min + Math.random() * (max - min);
+}
+
+const randLightBtn = document.getElementById("RandLightBtn");
+randLightBtn.addEventListener("click", () => {
+  // point light: anywhere in a box around the hands (they sit near z = -6)
+  pointLightPos = [rand(-10, 10), rand(-10, 10), rand(-12, 0)];
+
+  // directional light: random direction, re-rolled if it comes out nearly zero length
+  do {
+    dirLightDir = [rand(-1, 1), rand(-1, 1), rand(-1, 1)];
+  } while (Math.hypot(dirLightDir[0], dirLightDir[1], dirLightDir[2]) < 0.1);
+});
 
 let flatL = false, flatR = true;   // right hand starts flat
 
@@ -573,6 +579,8 @@ speedSlider.addEventListener("input", () => {
       //making some variables for the shader color parameters
       gl.uniform3fv(gl.getUniformLocation(program, "paletteParams"), paletteValues);
       gl.uniform3fv(gl.getUniformLocation(program, "uLightColors"), lightColors);
+      gl.uniform3fv(gl.getUniformLocation(program, "uPointLightPos"), pointLightPos);
+      gl.uniform3fv(gl.getUniformLocation(program, "uDirLightDir"), dirLightDir);
       gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
       gl.uniform1f(gl.getUniformLocation(program, "uKa"), parseFloat(kaSlider.value));
       gl.uniform1f(gl.getUniformLocation(program, "uKd"), parseFloat(kdSlider.value));
