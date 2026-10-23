@@ -274,8 +274,11 @@ function wristPos(data) {
       b.count = idx.length;
       return b;
     }
-    const cube = createCube();
-    const boneBuffers = makeShapeBuffers(cube.positions, cube.normals, cube.indices);
+    //const cube = createCube();
+    const cyl = createCylinder(16);
+    //const boneBuffers = makeShapeBuffers(cube.positions, cube.normals, cube.indices);
+    const boneBuffers = makeShapeBuffers(cyl.positions, cyl.normals, cyl.indices);
+    
 
     // draw one shape with one model matrix
     function drawShape(b, matrix) {
