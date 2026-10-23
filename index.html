@@ -72,6 +72,7 @@ Use arrow keys and w, s keys to move the camera.<br>
           <div style="display: flex; flex-direction: column; gap: 5px;">
             <button id="playBtn">Stop</button>
             <button id="RandLightBtn">Random Light dir</button>
+            <button id="lightModeBtn">RGB</button>
           </div>
         </div>
           <!-- per-hand material tabs -->
@@ -592,6 +593,21 @@ randLightBtn.addEventListener("click", () => {
   dirLightDir = [rand(-1, 1), rand(-1, 1), rand(-1, 1)];
 });
 
+// light color mode: RGB sends the slider colors, White sends 1,1,1 for every light.
+// the sliders (and lightColors) are never changed, so switching back restores the RGB colors.
+let whiteLights = false;
+const whiteLightColors = new Float32Array([1, 1, 1,   1, 1, 1,   1, 1, 1]);
+
+const lightModeBtn = document.getElementById("lightModeBtn");
+lightModeBtn.addEventListener("click", () => {
+  whiteLights = !whiteLights;
+  if (whiteLights) {
+    lightModeBtn.textContent = "White";
+  } else {
+    lightModeBtn.textContent = "RGB";
+  }
+});
+
 let flatL = false, flatR = true;   // right hand starts flat
 
 const shadingBtnL = document.getElementById("shadingBtnL");
@@ -685,7 +701,11 @@ speedSliderR.addEventListener("input", () => {
 
       //making some variables for the shader color parameters
       gl.uniform3fv(gl.getUniformLocation(program, "paletteParams"), paletteValues);
-      gl.uniform3fv(gl.getUniformLocation(program, "uLightColors"), lightColors);
+      if (whiteLights) {
+        gl.uniform3fv(gl.getUniformLocation(program, "uLightColors"), whiteLightColors);
+      } else {
+        gl.uniform3fv(gl.getUniformLocation(program, "uLightColors"), lightColors);
+      }
       gl.uniform3fv(gl.getUniformLocation(program, "uPointLightPos"), pointLightPos);
       gl.uniform3fv(gl.getUniformLocation(program, "uDirLightDir"), dirLightDir);
 
@@ -727,7 +747,7 @@ speedSliderR.addEventListener("input", () => {
 
     // Initialize when page loads
     window.onload = function () {
-      setInterval(render, 1000 / 60);//60fps
+      setInterval(render, 30);//this 60fps data will be slow motion at 30fps but its ok with me
     }
 
   </script>
