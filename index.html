@@ -77,14 +77,27 @@ Use arrow keys and w, s keys to move the camera.<br>
             <button id="shadingBtnR">Right: Flat</button>
           </div>
         </div>
+          <!-- per-hand material tabs -->
           <div>
-             <label>shininess <input type="range" id="shininessSlider" min="1" max="128" step="1" value="32"></label><br>
-            <label>ka <input type="range" id="kaSlider" min="0" max="1" step="0.01" value="0.2"></label><br>
-             <label>kd <input type="range" id="kdSlider" min="0" max="1" step="0.01" value="0.8"></label><br>
-             <label>ks <input type="range" id="ksSlider" min="0" max="1" step="0.01" value="0.5"></label><br>
-             <label>facets L <input type="range" id="facetsSliderL" min="3" max="16" step="1" value="8"></label> <span id="facetsLabelL">8</span><br>
-             <label>facets R <input type="range" id="facetsSliderR" min="3" max="16" step="1" value="8"></label> <span id="facetsLabelR">8</span>
-        </div>
+            <button id="tabLeftBtn">Left hand</button>
+            <button id="tabRightBtn">Right hand</button>
+          </div>
+
+          <div id="tabLeft">
+            <label>ka <input type="range" id="kaSliderL" min="0" max="1" step="0.01" value="0.2"></label><br>
+            <label>kd <input type="range" id="kdSliderL" min="0" max="1" step="0.01" value="0.8"></label><br>
+            <label>ks <input type="range" id="ksSliderL" min="0" max="1" step="0.01" value="0.5"></label><br>
+            <label>shininess <input type="range" id="shininessSliderL" min="1" max="128" step="1" value="32"></label><br>
+            <label>facets <input type="range" id="facetsSliderL" min="3" max="16" step="1" value="8"></label> <span id="facetsLabelL">8</span>
+          </div>
+
+          <div id="tabRight" style="display: none;">
+            <label>ka <input type="range" id="kaSliderR" min="0" max="1" step="0.01" value="0.2"></label><br>
+            <label>kd <input type="range" id="kdSliderR" min="0" max="1" step="0.01" value="0.8"></label><br>
+            <label>ks <input type="range" id="ksSliderR" min="0" max="1" step="0.01" value="0.5"></label><br>
+            <label>shininess <input type="range" id="shininessSliderR" min="1" max="128" step="1" value="32"></label><br>
+            <label>facets <input type="range" id="facetsSliderR" min="3" max="16" step="1" value="8"></label> <span id="facetsLabelR">8</span>
+          </div>
 
           <div>light colors</div>
           <div id="lightSliders" style="display: flex; gap: 10px;"></div>
@@ -478,13 +491,40 @@ function wristPos(data) {
       lightDiv.appendChild(block);
     }
 
-        const shininessSlider = document.getElementById("shininessSlider");
-        let shininess = parseFloat(shininessSlider.value);
-        shininessSlider.addEventListener("input", () => { shininess = parseFloat(shininessSlider.value); });
-    
-        const kaSlider = document.getElementById("kaSlider");
-        const kdSlider = document.getElementById("kdSlider");
-        const ksSlider = document.getElementById("ksSlider");
+        // material sliders, one set per hand
+        const kaSliderL = document.getElementById("kaSliderL");
+        const kdSliderL = document.getElementById("kdSliderL");
+        const ksSliderL = document.getElementById("ksSliderL");
+        const shininessSliderL = document.getElementById("shininessSliderL");
+
+        const kaSliderR = document.getElementById("kaSliderR");
+        const kdSliderR = document.getElementById("kdSliderR");
+        const ksSliderR = document.getElementById("ksSliderR");
+        const shininessSliderR = document.getElementById("shininessSliderR");
+
+        // left / right tabs: show one hand's panel, hide the other, bold the active tab
+        const tabLeft = document.getElementById("tabLeft");
+        const tabRight = document.getElementById("tabRight");
+        const tabLeftBtn = document.getElementById("tabLeftBtn");
+        const tabRightBtn = document.getElementById("tabRightBtn");
+
+        function showTab(hand) {
+          tabLeft.style.display = "none";
+          tabRight.style.display = "none";
+          tabLeftBtn.style.fontWeight = "normal";
+          tabRightBtn.style.fontWeight = "normal";
+          if (hand === "left") {
+            tabLeft.style.display = "block";
+            tabLeftBtn.style.fontWeight = "bold";
+          } else {
+            tabRight.style.display = "block";
+            tabRightBtn.style.fontWeight = "bold";
+          }
+        }
+
+        tabLeftBtn.addEventListener("click", () => { showTab("left"); });
+        tabRightBtn.addEventListener("click", () => { showTab("right"); });
+        showTab("left");
 
         const facetsSliderL = document.getElementById("facetsSliderL");
         const facetsLabelL = document.getElementById("facetsLabelL");
@@ -573,6 +613,14 @@ speedSlider.addEventListener("input", () => {
   speedLabel.textContent = speed.toFixed(1) + "x";
 });
 
+    // send one hand's material sliders to the shader (called right before that hand is drawn)
+    function setMaterial(kaSlider, kdSlider, ksSlider, shininessSlider) {
+      gl.uniform1f(gl.getUniformLocation(program, "uKa"), parseFloat(kaSlider.value));
+      gl.uniform1f(gl.getUniformLocation(program, "uKd"), parseFloat(kdSlider.value));
+      gl.uniform1f(gl.getUniformLocation(program, "uKs"), parseFloat(ksSlider.value));
+      gl.uniform1f(gl.getUniformLocation(program, "shininess"), parseFloat(shininessSlider.value));
+    }
+
     let startTime = Date.now();
 
     function render() {
@@ -622,10 +670,6 @@ speedSlider.addEventListener("input", () => {
       gl.uniform3fv(gl.getUniformLocation(program, "uLightColors"), lightColors);
       gl.uniform3fv(gl.getUniformLocation(program, "uPointLightPos"), pointLightPos);
       gl.uniform3fv(gl.getUniformLocation(program, "uDirLightDir"), dirLightDir);
-      gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
-      gl.uniform1f(gl.getUniformLocation(program, "uKa"), parseFloat(kaSlider.value));
-      gl.uniform1f(gl.getUniformLocation(program, "uKd"), parseFloat(kdSlider.value));
-      gl.uniform1f(gl.getUniformLocation(program, "uKs"), parseFloat(ksSlider.value));
 
       let handGlobalScale = 0.01;   // lower this if both hands don't fit in view
       let handBaseMatrix = mat4Scale(modelTransformationMatrix, [handGlobalScale, handGlobalScale, handGlobalScale]);
@@ -649,13 +693,16 @@ speedSlider.addEventListener("input", () => {
       } else {
         gl.uniform1i(uFlatLoc, 0);
       }
+      setMaterial(kaSliderR, kdSliderR, ksSliderR, shininessSliderR);
       drawHand(handDataR, handBaseMatrix, boneBuffersR);
+
       if (flatL) {
         gl.uniform1i(uFlatLoc, 1);
       } else {
         gl.uniform1i(uFlatLoc, 0);
       }
-      drawHand(handDataL, handBaseMatrix, boneBuffersL);      
+      setMaterial(kaSliderL, kdSliderL, ksSliderL, shininessSliderL);
+      drawHand(handDataL, handBaseMatrix, boneBuffersL);
       
       advanceFrame();
       }
