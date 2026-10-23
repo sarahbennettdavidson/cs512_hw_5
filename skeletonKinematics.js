@@ -89,7 +89,7 @@ function computeSkeletonMatrices(node, frameData, basePositions, stack = createM
     stackMultiply(stack, multiplyMat4(baseMat, frameRot));
 
     // 4. Render matrix: 8 mm thick, base Length * SF long
-    const renderMat = mat4Scale(stackGetTop(stack), [12, boneLength, 12]);
+    const renderMat = mat4Scale(stackGetTop(stack), [16, boneLength, 16]);
     matrixList.push({ name: node.name, matrix: renderMat, depth: node.depth });
 
     // 5. Children
