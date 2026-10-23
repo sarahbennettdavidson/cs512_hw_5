@@ -64,7 +64,8 @@ Use arrow keys and w, s keys to move the camera.<br>
         </div>
           <div>
              <label>shininess <input type="range" id="shininessSlider" min="1" max="128" step="1" value="32"></label>
-             <label>facets <input type="range" id="sidesSlider" min="3" max="16" step="1" value="16"></label> <span id="sidesLabel">16</span>
+             <label>facets L <input type="range" id="facetsSliderL" min="3" max="16" step="1" value="16"></label> <span id="facetsLabelL">16</span><br>
+             <label>facets R <input type="range" id="facetsSliderR" min="3" max="16" step="1" value="16"></label> <span id="facetsLabelR">16</span>
         </div>
 
           <div>
@@ -211,7 +212,7 @@ Promise.all([
 });
 
 // Draw one hand's skeleton for the current frame
-function drawHand(data, globalMatrix) {
+function drawHand(data, globalMatrix, buffers) {
   if (!data || !data.frames || !data.rootNode) return;
   const activeFrame = data.frames[currentFrame];
   if (!activeFrame) return;
@@ -219,8 +220,7 @@ function drawHand(data, globalMatrix) {
   const worldMatrices = computeSkeletonMatrices(data.rootNode, activeFrame, data.basePositions);
   for (let i = 0; i < worldMatrices.length; i++) {
     gl.uniform1f(uDT, worldMatrices[i].depth / (data.maxDepth + 1));  //the per bone color based on htr skeleton tree depth
-    drawShape(boneBuffers, multiplyMat4(globalMatrix, worldMatrices[i].matrix));
-  }
+    drawShape(buffers, multiplyMat4(globalMatrix, worldMatrices[i].matrix));  }
 }
 
 // Step both hands forward one frame, looping at the shorter file's end
@@ -290,19 +290,19 @@ function wristPos(data) {
     //const boneBuffers = makeShapeBuffers(cube.positions, cube.normals, cube.indices);
     //const boneBuffers = makeShapeBuffers(cyl.positions, cyl.normals, cyl.indices);
 
-     let boneBuffers;
-
-    // (re)build the bone cylinder with a given number of sides
-    function buildBones(sides) {
-      if (boneBuffers) {
-        gl.deleteBuffer(boneBuffers.vbo);
-        gl.deleteBuffer(boneBuffers.nbo);
-        gl.deleteBuffer(boneBuffers.ibo);
+      function buildBones(facets, old) {
+      if (old) {
+        gl.deleteBuffer(old.vbo);
+        gl.deleteBuffer(old.nbo);
+        gl.deleteBuffer(old.ibo);
       }
-      const cyl = createCylinder(sides);
-      boneBuffers = makeShapeBuffers(cyl.positions, cyl.normals, cyl.indices);
+      const cyl = createCylinder(facets);
+      return makeShapeBuffers(cyl.positions, cyl.normals, cyl.indices);
     }
-    buildBones(16);
+
+    // one cylinder per hand, so each hand can have its own number of facets
+    let boneBuffersL = buildBones(16);
+    let boneBuffersR = buildBones(16);
     
 
     // draw one shape with one model matrix
@@ -404,12 +404,20 @@ function wristPos(data) {
         let shininess = parseFloat(shininessSlider.value);
         shininessSlider.addEventListener("input", () => { shininess = parseFloat(shininessSlider.value); });
 
-        const sidesSlider = document.getElementById("sidesSlider");
-        const sidesLabel = document.getElementById("sidesLabel");
-        sidesSlider.addEventListener("input", () => {
-          const sides = parseInt(sidesSlider.value);
-          sidesLabel.textContent = sides;
-          buildBones(sides);
+        const facetsSliderL = document.getElementById("facetsSliderL");
+        const facetsLabelL = document.getElementById("facetsLabelL");
+        facetsSliderL.addEventListener("input", () => {
+          const n = parseInt(facetsSliderL.value);
+          facetsLabelL.textContent = n;
+          boneBuffersL = buildBones(n, boneBuffersL);
+        });
+
+        const facetsSliderR = document.getElementById("facetsSliderR");
+        const facetsLabelR = document.getElementById("facetsLabelR");
+        facetsSliderR.addEventListener("input", () => {
+          const n = parseInt(facetsSliderR.value);
+          facetsLabelR.textContent = n;
+          boneBuffersR = buildBones(n, boneBuffersR);
         });
 
         // Projection setup
@@ -530,10 +538,10 @@ speedSlider.addEventListener("input", () => {
       const uFlatLoc = gl.getUniformLocation(program, "uFlat");
 
       gl.uniform1i(uFlatLoc, flatR ? 1 : 0);
-      drawHand(handDataR, handBaseMatrix);
-
+      drawHand(handDataR, handBaseMatrix, boneBuffersR);
       gl.uniform1i(uFlatLoc, flatL ? 1 : 0);
-      drawHand(handDataL, handBaseMatrix);
+      drawHand(handDataL, handBaseMatrix, boneBuffersL);      
+      
       advanceFrame();
       }
 
