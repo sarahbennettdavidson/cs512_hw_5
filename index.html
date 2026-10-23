@@ -128,7 +128,7 @@ vec3 pointLight( in vec3 lightPos)
     return Kd * diff + Ks * spec;
 }
 
-vec3 directionalLight(in vec3 lightDir)//light direction is a vector, ie going at an angle like a beam and anything in the path is illuminated.
+vec3 directionalLight(in vec3 lightDir)//light direction is a vector, ie going at an angle anything in the path is illuminated.
 {
     vec3 L = normalize(-lightDir);
     vec3 R = reflect(-L, N);
@@ -150,11 +150,6 @@ void main() {
 
   N = normalize(vNormal);
   V = normalize(-vPosition);           // camera sits at the origin
-    
-  vec3 L = normalize(uLightPos - vPosition);
-  vec3 R = reflect(-L, N);
-  float diff = max(dot(N, L), 0.0);
-  float spec = pow(max(dot(V, R), 0.0), shininess);
     
   vec3 color = Ka;
   color += pointLight(vec3(10.0, 0.0, -6.0));
