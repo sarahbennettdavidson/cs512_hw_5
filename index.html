@@ -178,10 +178,7 @@ vec3 pointLight( in vec3 lightPos, in vec3 lightColor)
     vec3 L = normalize(lightPos - vPosition);
     vec3 R = reflect(-L, N);
     float diff = max(dot(N, L), 0.0);
-    float spec = 0.0;
-    if (diff > 0.0) {
-        spec = pow(max(dot(V, R), 0.0), shininess);
-    }
+    float spec = pow(max(dot(V, R), 0.0), shininess);
     return lightColor * (Kd * diff + Ks * spec);
 }
 
@@ -190,10 +187,7 @@ vec3 directionalLight(in vec3 lightDir, in vec3 lightColor)//light direction is 
     vec3 L = normalize(-lightDir);
     vec3 R = reflect(-L, N);
     float diff = max(dot(N, L), 0.0);
-    float spec = 0.0;
-    if (diff > 0.0) {
-        spec = pow(max(dot(V, R), 0.0), shininess);
-    }
+    float spec = pow(max(dot(V, R), 0.0), shininess);
     return lightColor * (Kd * diff + Ks * spec);
 }
 
