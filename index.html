@@ -142,7 +142,7 @@ vec3 directionalLight(in vec3 lightDir)//light direction is a vector, ie going a
 void main() {
   vec3 uLightPos = vec3(0.0, 0.0, -6.0);  
     
-  vec3 col = palette(paletteT, paletteParams[0],paletteParams[1],paletteParams[2],paletteParams[3]);
+  vec3 col = palette(uDepthT, paletteParams[0],paletteParams[1],paletteParams[2],paletteParams[3]);
 
   Ka = 0.2 * col;
   Kd = 0.8 * col;
@@ -243,7 +243,7 @@ function wristPos(data) {
     vertEditor.value = document.getElementById("vertex-shader").textContent;
     fragEditor.value = document.getElementById("fragment-shader").textContent;
 
-    let program, posLoc, normLoc, timeLoc, uMVM, uPM, uMTM;
+    let program, posLoc, normLoc, timeLoc, uMVM, uPM, uMTM, uDT;
     let handDataR = null, handDataL = null;   // the hand skeleton data from the parsed htr file
     let currentFrame = 1;     
     let isPlaying = true;
