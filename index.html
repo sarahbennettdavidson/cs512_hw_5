@@ -174,7 +174,11 @@ void main() {
   Kd = uKd * col;
   Ks = vec3(uKs);
 
-  N = normalize(uFlat ? vFlatNormal : vNormal);
+  if (uFlat) {
+    N = normalize(vFlatNormal);
+  } else {
+    N = normalize(vNormal);
+  }
   V = normalize(-vPosition);           // camera sits at the origin
 
   vec3 color = Ka * uLightColors[0];
@@ -487,7 +491,11 @@ function wristPos(data) {
 const playBtn = document.getElementById("playBtn");
   playBtn.addEventListener("click", () => {
     isPlaying = !isPlaying;
-    playBtn.textContent = isPlaying ? "Stop" : "Play";
+    if (isPlaying) {
+      playBtn.textContent = "Stop";
+    } else {
+      playBtn.textContent = "Play";
+    }
   });
 
 // light placement: starts at the defaults, the button replaces them with random values
@@ -504,10 +512,8 @@ randLightBtn.addEventListener("click", () => {
   // point light: anywhere in a box around the hands (they sit near z = -6)
   pointLightPos = [rand(-10, 10), rand(-10, 10), rand(-12, 0)];
 
-  // directional light: random direction, re-rolled if it comes out nearly zero length
-  do {
-    dirLightDir = [rand(-1, 1), rand(-1, 1), rand(-1, 1)];
-  } while (Math.hypot(dirLightDir[0], dirLightDir[1], dirLightDir[2]) < 0.1);
+  // directional light: random direction
+  dirLightDir = [rand(-1, 1), rand(-1, 1), rand(-1, 1)];
 });
 
 let flatL = false, flatR = true;   // right hand starts flat
@@ -515,13 +521,21 @@ let flatL = false, flatR = true;   // right hand starts flat
 const shadingBtnL = document.getElementById("shadingBtnL");
 shadingBtnL.addEventListener("click", () => {
   flatL = !flatL;
-  shadingBtnL.textContent = "Left: " + (flatL ? "Flat" : "Phong");
+  if (flatL) {
+    shadingBtnL.textContent = "Left: Flat";
+  } else {
+    shadingBtnL.textContent = "Left: Phong";
+  }
 });
 
 const shadingBtnR = document.getElementById("shadingBtnR");
 shadingBtnR.addEventListener("click", () => {
   flatR = !flatR;
-  shadingBtnR.textContent = "Right: " + (flatR ? "Flat" : "Phong");
+  if (flatR) {
+    shadingBtnR.textContent = "Right: Flat";
+  } else {
+    shadingBtnR.textContent = "Right: Phong";
+  }
 });
 
 const speedSlider = document.getElementById("speedSlider");
@@ -603,9 +617,17 @@ speedSlider.addEventListener("input", () => {
       
       const uFlatLoc = gl.getUniformLocation(program, "uFlat");
 
-      gl.uniform1i(uFlatLoc, flatR ? 1 : 0);
+      if (flatR) {
+        gl.uniform1i(uFlatLoc, 1);
+      } else {
+        gl.uniform1i(uFlatLoc, 0);
+      }
       drawHand(handDataR, handBaseMatrix, boneBuffersR);
-      gl.uniform1i(uFlatLoc, flatL ? 1 : 0);
+      if (flatL) {
+        gl.uniform1i(uFlatLoc, 1);
+      } else {
+        gl.uniform1i(uFlatLoc, 0);
+      }
       drawHand(handDataL, handBaseMatrix, boneBuffersL);      
       
       advanceFrame();
