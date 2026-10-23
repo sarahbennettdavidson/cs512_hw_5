@@ -50,10 +50,10 @@ function createCube() {
   return { positions, normals, indices };
 }
 
-function createCylinder(segments) {
+function createCylinder(segments, flat) {
   const pos = [], nrm = [], idx = [];
   const r = 0.5;
-
+/*    //this needs the face normals for the flat
   // Side: radius 0.5, from y = 0 to y = 1
   for (let i = 0; i <= segments; i++) {
     const a = (i / segments) * Math.PI * 2, x = Math.cos(a), z = Math.sin(a);
@@ -63,6 +63,35 @@ function createCylinder(segments) {
   for (let i = 0; i < segments; i++) {
     const b = i * 2;
     idx.push(b, b + 1, b + 3, b, b + 3, b + 2);
+  }*/
+  
+  //for normals for the face flat shading 
+  for (let i = 0; i < segments; i++) {
+    const angleStart = (i / segments) * Math.PI * 2;
+    const angleEnd = ((i + 1) / segments) * Math.PI * 2;
+    const angleMiddle = ((i + 0.5) / segments) * Math.PI * 2;
+
+    pos.push(r * Math.cos(angleStart), 0, r * Math.sin(angleStart));
+    pos.push(r * Math.cos(angleStart), 1, r * Math.sin(angleStart));
+    pos.push(r * Math.cos(angleEnd), 0, r * Math.sin(angleEnd));
+    pos.push(r * Math.cos(angleEnd), 1, r * Math.sin(angleEnd));
+
+    if (flat) {
+      // face normal: the same for all 4 vertices of the facet
+      nrm.push(Math.cos(angleMiddle), 0, Math.sin(angleMiddle));
+      nrm.push(Math.cos(angleMiddle), 0, Math.sin(angleMiddle));
+      nrm.push(Math.cos(angleMiddle), 0, Math.sin(angleMiddle));
+      nrm.push(Math.cos(angleMiddle), 0, Math.sin(angleMiddle));
+    } else {
+      // smooth: each vertex points straight out at its own angle
+      nrm.push(Math.cos(angleStart), 0, Math.sin(angleStart));
+      nrm.push(Math.cos(angleStart), 0, Math.sin(angleStart));
+      nrm.push(Math.cos(angleEnd), 0, Math.sin(angleEnd));
+      nrm.push(Math.cos(angleEnd), 0, Math.sin(angleEnd));
+    }
+
+    const first = i * 4;
+    idx.push(first, first + 1, first + 3, first, first + 3, first + 2);
   }
 
   // Caps: bottom at y = 0 facing down, top at y = 1 facing up
