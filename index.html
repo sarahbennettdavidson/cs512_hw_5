@@ -345,19 +345,19 @@ function wristPos(data) {
     //const boneBuffers = makeShapeBuffers(cube.positions, cube.normals, cube.indices);
     //const boneBuffers = makeShapeBuffers(cyl.positions, cyl.normals, cyl.indices);
 
-      function buildBones(facets, old) {
+      function buildBones(facets, flat, old) {
       if (old) {
         gl.deleteBuffer(old.vbo);
         gl.deleteBuffer(old.nbo);
         gl.deleteBuffer(old.ibo);
       }
-      const cyl = createCylinder(facets);
+      const cyl = createCylinder(facets, flat);
       return makeShapeBuffers(cyl.positions, cyl.normals, cyl.indices);
     }
 
     // one cylinder per hand, so each hand can have its own number of facets
-    let boneBuffersL = buildBones(10);   // keep in sync with the facets L slider's value
-    let boneBuffersR = buildBones(6);    // keep in sync with the facets R slider's value
+    let boneBuffersL = buildBones(10, false);   // keep in sync with the facets L slider's value
+    let boneBuffersR = buildBones(6, true);    // keep in sync with the facets R slider's value
     
 
     // draw one shape with one model matrix
@@ -541,7 +541,7 @@ function wristPos(data) {
         facetsSliderL.addEventListener("input", () => {
           const n = parseInt(facetsSliderL.value);
           facetsLabelL.textContent = n;
-          boneBuffersL = buildBones(n, boneBuffersL);
+          boneBuffersL = buildBones(n, flatL, boneBuffersL);
         });
 
         const facetsSliderR = document.getElementById("facetsSliderR");
@@ -549,7 +549,7 @@ function wristPos(data) {
         facetsSliderR.addEventListener("input", () => {
           const n = parseInt(facetsSliderR.value);
           facetsLabelR.textContent = n;
-          boneBuffersR = buildBones(n, boneBuffersR);
+          boneBuffersR = buildBones(n, flatR, boneBuffersR);
         });
 
         // Projection setup
@@ -618,6 +618,7 @@ shadingBtnL.addEventListener("click", () => {
   } else {
     shadingBtnL.textContent = "Phong";
   }
+  boneBuffersL = buildBones(parseInt(facetsSliderL.value), flatL, boneBuffersL);
 });
 
 const shadingBtnR = document.getElementById("shadingBtnR");
@@ -628,6 +629,7 @@ shadingBtnR.addEventListener("click", () => {
   } else {
     shadingBtnR.textContent = "Phong";
   }
+  boneBuffersR = buildBones(parseInt(facetsSliderR.value), flatR, boneBuffersR);
 });
 
 // animation speed, one slider per hand
