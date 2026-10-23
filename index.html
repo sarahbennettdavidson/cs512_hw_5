@@ -161,8 +161,7 @@ void main() {
   <script src="primitives.js"></script>
   <script src="transformations.js"></script>
   <script src="skeletonKinematics.js"></script>
-  <script src="htrParserR.js"></script>
-  <script src="htrParserL.js"></script> 
+  <script src="htrParser.js"></script>
 
   <script>
     function createShader(gl, type, source) {
@@ -190,8 +189,8 @@ void main() {
 
   // Load both hands; same capture, so they share frame numbers
 Promise.all([
-    loadAndParseHTRR('loops1_all_right.htr'),
-    loadAndParseHTRL('loops1_all_left.htr')
+    loadAndParseHTR('loops1_all_right.htr'),
+    loadAndParseHTR('loops1_all_left.htr')
 ]).then(([right, left]) => {
     handDataR = right;
     handDataL = left;
