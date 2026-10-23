@@ -64,6 +64,7 @@ Use arrow keys and w, s keys to move the camera.<br>
         </div>
           <div>
              <label>shininess <input type="range" id="shininessSlider" min="1" max="128" step="1" value="32"></label>
+             <label>facets <input type="range" id="sidesSlider" min="3" max="16" step="1" value="16"></label> <span id="sidesLabel">16</span>
         </div>
 
           <div>
@@ -285,9 +286,23 @@ function wristPos(data) {
       return b;
     }
     //const cube = createCube();
-    const cyl = createCylinder(16);
+   // const cyl = createCylinder(16);
     //const boneBuffers = makeShapeBuffers(cube.positions, cube.normals, cube.indices);
-    const boneBuffers = makeShapeBuffers(cyl.positions, cyl.normals, cyl.indices);
+    //const boneBuffers = makeShapeBuffers(cyl.positions, cyl.normals, cyl.indices);
+
+     let boneBuffers;
+
+    // (re)build the bone cylinder with a given number of sides
+    function buildBones(sides) {
+      if (boneBuffers) {
+        gl.deleteBuffer(boneBuffers.vbo);
+        gl.deleteBuffer(boneBuffers.nbo);
+        gl.deleteBuffer(boneBuffers.ibo);
+      }
+      const cyl = createCylinder(sides);
+      boneBuffers = makeShapeBuffers(cyl.positions, cyl.normals, cyl.indices);
+    }
+    buildBones(16);
     
 
     // draw one shape with one model matrix
@@ -388,6 +403,14 @@ function wristPos(data) {
         const shininessSlider = document.getElementById("shininessSlider");
         let shininess = parseFloat(shininessSlider.value);
         shininessSlider.addEventListener("input", () => { shininess = parseFloat(shininessSlider.value); });
+
+        const sidesSlider = document.getElementById("sidesSlider");
+        const sidesLabel = document.getElementById("sidesLabel");
+        sidesSlider.addEventListener("input", () => {
+          const sides = parseInt(sidesSlider.value);
+          sidesLabel.textContent = sides;
+          buildBones(sides);
+        });
 
         // Projection setup
         let fov = Math.PI / 4, aspect = canvas.width / canvas.height, zNear = 0.1, zFar = 100;
