@@ -52,30 +52,31 @@ function createCube() {
 
 function createCylinder(segments) {
   const pos = [], nrm = [], idx = [];
+  const r = 0.5;
 
-  // Side
+  // Side: radius 0.5, from y = 0 to y = 1
   for (let i = 0; i <= segments; i++) {
     const a = (i / segments) * Math.PI * 2, x = Math.cos(a), z = Math.sin(a);
-    pos.push(x, -1, z, x, 1, z);
-    nrm.push(x, 0, z, x, 0, z);
+    pos.push(r * x, 0, r * z,   r * x, 1, r * z);
+    nrm.push(x, 0, z,   x, 0, z);
   }
   for (let i = 0; i < segments; i++) {
     const b = i * 2;
     idx.push(b, b + 1, b + 3, b, b + 3, b + 2);
   }
 
-  // Caps
-  for (const y of [-1, 1]) {
+  // Caps: bottom at y = 0 facing down, top at y = 1 facing up
+  for (const [y, ny] of [[0, -1], [1, 1]]) {
     const center = pos.length / 3;
     pos.push(0, y, 0);
-    nrm.push(0, y, 0);
+    nrm.push(0, ny, 0);
     for (let i = 0; i <= segments; i++) {
       const a = (i / segments) * Math.PI * 2;
-      pos.push(Math.cos(a), y, Math.sin(a));
-      nrm.push(0, y, 0);
+      pos.push(r * Math.cos(a), y, r * Math.sin(a));
+      nrm.push(0, ny, 0);
     }
     for (let i = 1; i <= segments; i++) {
-      if (y > 0) idx.push(center, center + i + 1, center + i);
+      if (ny > 0) idx.push(center, center + i + 1, center + i);
       else idx.push(center, center + i, center + i + 1);
     }
   }
