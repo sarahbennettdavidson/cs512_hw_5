@@ -79,10 +79,16 @@ function parseHTRData(text) {
                 const frameIdx = parseInt(chars[0]);
                 if (!frameDataList[frameIdx]) frameDataList[frameIdx] = {};
 
+                // scale factor column is optional; default 1.0
+                let sf = 1.0;
+                if (chars.length >= 8) {
+                    sf = parseFloat(chars[7]);
+                }
+
                 frameDataList[frameIdx][jointName] = {
                     Tx: parseFloat(chars[1]), Ty: parseFloat(chars[2]), Tz: parseFloat(chars[3]),
                     Rx: parseFloat(chars[4]), Ry: parseFloat(chars[5]), Rz: parseFloat(chars[6]),
-                    SF: chars.length >= 8 ? parseFloat(chars[7]) : 1.0
+                    SF: sf
                 };
             }
         }
@@ -105,7 +111,10 @@ function parseHTRData(text) {
         };
     }
 
-    const rootNode = rootName ? buildTree(rootName, 0) : null;
+    let rootNode = null;
+    if (rootName) {
+        rootNode = buildTree(rootName, 0);
+    }
 
     return {
         header: header,
