@@ -71,7 +71,6 @@ Use arrow keys and w, s keys to move the camera.<br>
           </div>
           <div style="display: flex; flex-direction: column; gap: 5px;">
             <button id="playBtn">Stop</button>
-            <button id="resetBtn">Reset</button>
             <button id="RandLightBtn">Random Light dir</button>
           </div>
         </div>
@@ -630,22 +629,6 @@ let speedR = parseFloat(speedSliderR.value);
 speedSliderR.addEventListener("input", () => {
   speedR = parseFloat(speedSliderR.value);
   speedLabelR.textContent = speedR.toFixed(1) + "x";
-});
-
-// reset: both hands back to frame 1, both speeds to 0
-const resetBtn = document.getElementById("resetBtn");
-resetBtn.addEventListener("click", () => {
-  framePosL = 1;
-  framePosR = 1;
-  currentFrameL = 1;
-  currentFrameR = 1;
-
-  speedL = 0;
-  speedR = 0;
-  speedSliderL.value = 0;
-  speedSliderR.value = 0;
-  speedLabelL.textContent = "0.0x";
-  speedLabelR.textContent = "0.0x";
 });
 
     // send one hand's material sliders to the shader (called right before that hand is drawn)
