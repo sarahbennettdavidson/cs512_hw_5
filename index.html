@@ -22,7 +22,21 @@
     */
 
     canvas {
-      border: 1px solid #444;
+      /* border: 1px solid #444; */
+      position: relative;
+      z-index: 0;            /* behind the controls */
+      margin-left: -80px;    /* slide left so it overlaps the controls a bit */
+    }
+
+    #controls {
+      position: relative;
+      z-index: 1;            /* controls draw on top of the canvas */
+      pointer-events: none;  /* empty parts of the column let the mouse reach the canvas */
+    }
+
+    #controls input,
+    #controls button {
+      pointer-events: auto;  /* but sliders and buttons still take clicks */
     }
   </style>
 </head>
@@ -50,7 +64,7 @@ Use arrow keys and w, s keys to move the camera.<br>
     -->
 
       <!-- controls column (was under the canvas: max-height: 150px; overflow-y: auto) -->
-      <div style="width: 400px; color: #0f0;">
+      <div id="controls" style="width: 400px; color: #0f0;">
         <div style="display: flex; gap: 20px;">
           <div>
             <label>Rotate X <input type="range" id="xRotSlider" min="-5" max="5" step="0.1" value="0"></label><br>
@@ -84,7 +98,7 @@ Use arrow keys and w, s keys to move the camera.<br>
         <div id="paletteSliders" style="display: flex; gap: 10px;"></div>
       </div>
     <div>
-      <canvas id="glcanvas" width="400" height="400"></canvas>
+      <canvas id="glcanvas" width="600" height="600"></canvas>
     </div>
   </div>
 
