@@ -59,6 +59,7 @@ Use arrow keys and w, s keys to move the camera.<br>
             <button id="playBtn">Stop</button>
             <button id="projBtn">Orthographic</button>
           </div>
+        </div>
           <div>
              <label>shininess <input type="range" id="shininessSlider" min="1" max="128" step="1" value="32"></label>
         </div>
@@ -377,9 +378,6 @@ function wristPos(data) {
 
       paletteDiv.appendChild(block);
     }
-        const paletteTSlider = document.getElementById("paletteTSlider");
-        let paletteT = parseFloat(paletteTSlider.value);
-        paletteTSlider.addEventListener("input", () => { paletteT = parseFloat(paletteTSlider.value); });
 
         const shininessSlider = document.getElementById("shininessSlider");
         let shininess = parseFloat(shininessSlider.value);
@@ -469,7 +467,6 @@ speedSlider.addEventListener("input", () => {
 
       //making some variables for the shader color parameters
       gl.uniform3fv(gl.getUniformLocation(program, "paletteParams"), paletteValues);
-      gl.uniform1f(gl.getUniformLocation(program, "paletteT"), paletteT);
       gl.uniform1f(gl.getUniformLocation(program, "shininess"), shininess);
 
       let handGlobalScale = 0.01;   // lower this if both hands don't fit in view
