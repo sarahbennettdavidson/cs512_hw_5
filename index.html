@@ -85,7 +85,7 @@ Use arrow keys and w, s keys to move the camera.<br>
             <label>kd <input type="range" id="kdSliderL" min="0" max="1" step="0.01" value="0.8"></label><br>
             <label>ks <input type="range" id="ksSliderL" min="0" max="1" step="0.01" value="0.5"></label><br>
             <label>shininess <input type="range" id="shininessSliderL" min="1" max="128" step="1" value="32"></label><br>
-            <label>facets <input type="range" id="facetsSliderL" min="3" max="16" step="1" value="8"></label> <span id="facetsLabelL">8</span><br>
+            <label>facets <input type="range" id="facetsSliderL" min="3" max="16" step="1" value="10"></label> <span id="facetsLabelL">10</span><br>
             shading <button id="shadingBtnL">Phong</button><br>
             <label>speed <input type="range" id="speedSliderL" min="0" max="4" step="0.1" value="1"></label> <span id="speedLabelL">1.0x</span>
           </div>
@@ -95,7 +95,7 @@ Use arrow keys and w, s keys to move the camera.<br>
             <label>kd <input type="range" id="kdSliderR" min="0" max="1" step="0.01" value="0.8"></label><br>
             <label>ks <input type="range" id="ksSliderR" min="0" max="1" step="0.01" value="0.5"></label><br>
             <label>shininess <input type="range" id="shininessSliderR" min="1" max="128" step="1" value="32"></label><br>
-            <label>facets <input type="range" id="facetsSliderR" min="3" max="16" step="1" value="8"></label> <span id="facetsLabelR">8</span><br>
+            <label>facets <input type="range" id="facetsSliderR" min="3" max="16" step="1" value="6"></label> <span id="facetsLabelR">6</span><br>
             shading <button id="shadingBtnR">Flat</button><br>
             <label>speed <input type="range" id="speedSliderR" min="0" max="4" step="0.1" value="1"></label> <span id="speedLabelR">1.0x</span>
           </div>
@@ -355,8 +355,8 @@ function wristPos(data) {
     }
 
     // one cylinder per hand, so each hand can have its own number of facets
-    let boneBuffersL = buildBones(8);
-    let boneBuffersR = buildBones(8);
+    let boneBuffersL = buildBones(10);   // keep in sync with the facets L slider's value
+    let boneBuffersR = buildBones(6);    // keep in sync with the facets R slider's value
     
 
     // draw one shape with one model matrix
