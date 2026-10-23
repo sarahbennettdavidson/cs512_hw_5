@@ -389,6 +389,21 @@ function wristPos(data) {
       lastX = e.clientX; lastY = e.clientY;
     });
 
+    // controls column: bring it in front of the canvas whenever the mouse is over its area,
+    // even when the mouse comes in from the canvas side
+    const controls = document.getElementById("controls");
+
+    canvas.addEventListener("mousemove", e => {
+      const r = controls.getBoundingClientRect();   // where the controls column is on screen
+      if (!mouseDown && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom) {
+        controls.style.zIndex = 2;
+      }
+    });
+
+    controls.addEventListener("mouseleave", () => {
+      controls.style.zIndex = "";   // back to the CSS value, under the canvas
+    });
+
     document.addEventListener('keydown', e => {
       const step = 0.2;
       switch (e.key) {
